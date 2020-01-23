@@ -15,8 +15,7 @@ class OptionsStep extends Component {
   renderOption = option => {
     const { bubbleOptionStyle, step } = this.props;
     const { user } = step;
-    const { value, label } = option;
-
+    const { value, label, optionComponent } = option;    
     return (
       <Option key={value} className="rsc-os-option">
         <OptionElement
@@ -25,7 +24,7 @@ class OptionsStep extends Component {
           user={user}
           onClick={() => this.onOptionClick({ value })}
         >
-          {label}
+          {optionComponent || label}
         </OptionElement>
       </Option>
     );
