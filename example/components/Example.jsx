@@ -1,11 +1,13 @@
 import React from 'react';
 import { ThemeProvider } from 'styled-components';
 import ChatBot from '../../lib/index';
+import ImageOption from './ImageOption';
+import { cloneDeep } from 'lodash';
 
 const otherFontTheme = {
   background: '#f5f8fb',
   fontFamily: 'Helvetica Neue',
-  headerBgColor: '#6e48aa',
+  headerBgColor: 'rgb(102,161,62)',
   headerFontColor: '#fff',
   headerFontSize: '16px',
   botBubbleColor: '#FFF',
@@ -14,132 +16,163 @@ const otherFontTheme = {
   userFontColor: '#4a4a4a'
 };
 
-let selectedOption;
-
-const steps = [
-  {
-    id: '1',
-    message: 'Hey, I am AITA you family trip assistant ',
-    trigger: '2'
-  },
-  {
-    id: '2',
-    message: "Let's get you started",
-    trigger: '3'
-  },
-  {
-    id: '3',
-    message: 'What kind of holiday would you like to go for?',
-    trigger: 'option_holiday_type'
-  },
-  {
-    id: 'option_holiday_type',
-    options: [
-      {
-        value: '1',
-        label: 'First Image',
-        trigger: 'ask_name',
-        optionBubbleStyle: {
-          padding: '0px',
-          overflow: 'hidden',
-          borderRadius: '10px'
-        },
-        onOptionAction: data => (selectedOption = data.value),
-        optionComponent: (
-          <div style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
-            <img alt="" style={{ width: 250, height: 130 }} src="https://i.imgur.com/JYNzLzx.jpg" />
-            <div
-              style={{
-                display: 'flex',
-                padding: 5,
-                flex: 1,
-                flexDirection: 'row',
-                justifyContent: 'flex-start',
-                alignItems: 'flex-start'
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={selectedOption === '1'}
-                style={{ marginRight: 5, backgroundColor: '#2A2', fontSize: 18 }}
-              />
-              Beach Holiday
-            </div>
-          </div>
-        )
-      },
-      {
-        value: '2',
-        label: 'Second Image',
-        trigger: 'ask_name',
-        optionBubbleStyle: { padding: '0px', overflow: 'hidden', borderRadius: '10px' },
-        optionComponent: (
-          <div style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
-            <img alt="" style={{ width: 250, height: 130 }} src="https://i.imgur.com/iTekUgc.jpg" />
-            <div
-              style={{
-                display: 'flex',
-                padding: 5,
-                flex: 1,
-                flexDirection: 'row',
-                justifyContent: 'flex-start',
-                alignItems: 'flex-start'
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={selectedOption === '2'}
-                style={{ marginRight: 5, backgroundColor: '#2A2', fontSize: 18 }}
-              />
-              Beach Holiday
-            </div>
-          </div>
-        ),
-        user: true
-      }
-    ]
-  },
-  {
-    id: 'ask_name',
-    message: 'can i know your name',
-    trigger: 'name'
-  },
-  {
-    id: 'name',
-    user: true,
-    trigger: 'disp'
-  },
-  {
-    id: 'disp',
-    message: 'Hi, {previousValue}',
-    trigger: 'gender'
-  },
-  {
-    id: 'gender',
-    message: 'What is your gender',
-    trigger: 'option_gender'
-  },
-  {
-    id: 'option_gender',
-    options: [
-      { value: 'male', label: 'Male', trigger: 'thanks' },
-      { value: 'female', label: 'Female', trigger: 'thanks' }
-    ]
-  },
-  {
-    id: 'thanks',
-    message: 'Thank you for registering with us',
-    end: true
+class ThemedExample extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      selectedOption: {}
+    };
   }
-];
 
-const ThemedExample = () => (
-  <ThemeProvider theme={otherFontTheme}>
-    <React.StrictMode>
-      <ChatBot botDelay={500} customDelay={500} steps={steps} />
-      <button onClick={() => {}}>Next</button>
-    </React.StrictMode>
-  </ThemeProvider>
-);
+  steps = [
+    {
+      id: '1',
+      message: 'Hey, I am AITA you family trip assistant ',
+      trigger: '2',
+      hideInput: true
+    },
+    {
+      id: '2',
+      message: "Let's get you started",
+      trigger: '3',
+      hideInput: true
+    },
+    {
+      id: '3',
+      message: 'What kind of holiday would you like to go for?',
+      trigger: 'option_holiday_type',
+      hideInput: true
+    },
+    {
+      id: 'option_holiday_type',
+      options: [
+        {
+          value: '1',
+          label: 'First Image',
+          trigger: 'ask_name',
+          optionBubbleStyle: {
+            padding: '0px',
+            overflow: 'hidden',
+            borderRadius: '10px'
+          },
+          onOptionAction: data => this.setState({ selectedOption: data }),
+          optionComponent: (
+            <ImageOption
+              imageSource="https://i.imgur.com/JYNzLzx.jpg"
+              checked={false}
+              label="Beach Holiday"
+            />
+          )
+        },
+        {
+          value: '2',
+          label: 'Second Image',
+          trigger: 'ask_name',
+          optionBubbleStyle: { padding: '0px', overflow: 'hidden', borderRadius: '10px' },
+          onOptionAction: data => {
+            const { step, option } = data;
+            const optionsToUpdate = [];
+            console.log(step);
+            step.options.map((item, index) => {
+              // if (item.value === option.value) {
+              // } else {
+              //   item.optionComponent.props.checked = false;
+              // }
+            });
+
+            // this.chatBotRef.updateRenderedSteps();
+            // this.setState({ selectedOption: data });
+          },
+          optionComponent: (
+            <ImageOption
+              imageSource="https://i.imgur.com/iTekUgc.jpg"
+              checked={false}
+              label="Beach Holiday"
+            />
+          ),
+          user: true
+        }
+      ],
+
+      hideInput: true
+    },
+    {
+      id: 'ask_name',
+      message: 'can i know your name',
+      trigger: 'name'
+    },
+    {
+      id: 'name',
+      user: true,
+      trigger: 'disp'
+    },
+    {
+      id: 'disp',
+      message: 'Hi, {previousValue}',
+      trigger: 'gender',
+      hideInput: true
+    },
+    {
+      id: 'gender',
+      message: 'What is your gender',
+      trigger: 'option_gender',
+      hideInput: true
+    },
+    {
+      id: 'option_gender',
+      options: [
+        { value: 'male', label: 'Male', trigger: 'thanks' },
+        { value: 'female', label: 'Female', trigger: 'thanks' }
+      ],
+      hideInput: true
+    },
+    {
+      id: 'thanks',
+      message: 'Thank you for registering with us',
+      end: true,
+      hideInput: true
+    }
+  ];
+
+  chatBotRef;
+
+  render() {
+    const { selectedOption } = this.state;
+    return (
+      <ThemeProvider theme={otherFontTheme}>
+        <React.StrictMode>
+          <ChatBot
+            // floating
+            hideHeader
+            ref={ref => (this.chatBotRef = ref)}
+            botDelay={100}
+            customDelay={100}
+            userDelay={100}
+            steps={this.steps}
+          />
+          <button
+            type="button"
+            style={{
+              padding: '19px 25px',
+              borderRadius: '50%',
+              marginTop: 5,
+              background:
+                'linear-gradient(to bottom right, rgb(132,190,83), rgb(102,161,62),rgb(102,161,62))',
+              borderWidth: 0,
+              color: '#FFF',
+              fontSize: 22,
+              fontWeight: 'bold'
+            }}
+            onClick={() => {
+              this.chatBotRef.triggerNextStep(selectedOption.option);
+            }}
+          >
+            >
+          </button>
+        </React.StrictMode>
+      </ThemeProvider>
+    );
+  }
+}
 
 export default ThemedExample;

@@ -171,6 +171,12 @@ class ChatBot extends Component {
     }
   }
 
+  updateRenderedSteps() {
+    this.setState({ renderedSteps: this.state.renderedSteps }, () =>
+      console.log(this.state.renderedSteps)
+    );
+  }
+
   onNodeInserted = event => {
     const { currentTarget: target } = event;
     const { enableSmoothScroll } = this.props;

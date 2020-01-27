@@ -23,7 +23,7 @@ class OptionsStep extends Component {
           style={{ ...bubbleOptionStyle, ...optionBubbleStyle }}
           user={user}
           onClick={() =>
-            onOptionAction ? onOptionAction({ value }) : this.onOptionClick({ value })
+            onOptionAction ? onOptionAction({ option, step }) : this.onOptionClick({ value })
           }
         >
           {optionComponent || label}
