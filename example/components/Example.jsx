@@ -1,8 +1,8 @@
 import React from 'react';
 import { ThemeProvider } from 'styled-components';
+import { get } from 'lodash';
 import ChatBot from '../../lib/index';
 import ImageOption from './ImageOption';
-import { set } from 'lodash';
 
 const otherFontTheme = {
   background: '#f5f8fb',
@@ -17,150 +17,125 @@ const otherFontTheme = {
 };
 
 class ThemedExample extends React.Component {
-  steps = [
-    {
-      id: '1',
-      message: 'Hey, I am AITA you family trip assistant ',
-      trigger: '2',
-      hideInput: true
-    },
-    {
-      id: '2',
-      message: "Let's get you started",
-      trigger: '3',
-      hideInput: true
-    },
-    {
-      id: '3',
-      message: 'What kind of holiday would you like to go for?',
-      trigger: 'option_holiday_type',
-      hideInput: true
-    },
-    {
-      id: 'option_holiday_type',
-      options: [
-        {
-          value: '1',
-          label: 'First Image',
-          trigger: 'ask_name',
-          optionBubbleStyle: {
-            padding: '0px',
-            overflow: 'hidden',
-            borderRadius: '10px'
-          },
-          onOptionAction: data => {
-            this.onRadioOptionClicked(data);
-            this.setState({ selectedOption: data });
-          },
-          optionComponent: (
-            <ImageOption
-              imageSource="https://i.imgur.com/JYNzLzx.jpg"
-              checked={false}
-              label="Sandy Holiday"
-            />
-          )
-        },
-        {
-          value: '2',
-          label: 'Second Image',
-          trigger: 'ask_name',
-          optionBubbleStyle: { padding: '0px', overflow: 'hidden', borderRadius: '10px' },
-          onOptionAction: data => {
-            this.onRadioOptionClicked(data);
-            this.setState({ selectedOption: data });
-          },
-          optionComponent: (
-            <ImageOption
-              imageSource="https://i.imgur.com/iTekUgc.jpg"
-              checked={false}
-              label="Beach Holiday"
-            />
-          ),
-          user: true
-        }
-      ],
-
-      hideInput: true
-    },
-    {
-      id: 'ask_name',
-      message: 'can i know your name',
-      trigger: 'name'
-    },
-    {
-      id: 'name',
-      user: true,
-      trigger: 'disp'
-    },
-    {
-      id: 'disp',
-      message: 'Hi, {previousValue}',
-      trigger: 'gender',
-      hideInput: true
-    },
-    {
-      id: 'gender',
-      message: 'What is your gender',
-      trigger: 'option_gender',
-      hideInput: true
-    },
-    {
-      id: 'option_gender',
-      options: [
-        { value: 'male', label: 'Male', trigger: 'thanks' },
-        { value: 'female', label: 'Female', trigger: 'thanks' }
-      ],
-      hideInput: true
-    },
-    {
-      id: 'thanks',
-      message: 'Thank you for registering with us',
-      end: true,
-      hideInput: true
-    }
-  ];
-
   constructor(props) {
     super(props);
     this.state = {
-      selectedOption: {}
+      selectedOption: {},
+      steps: [
+        {
+          id: '1',
+          message: 'Hey, I am AITA you family trip assistant ',
+          trigger: '2',
+          hideInput: true
+        },
+        {
+          id: '2',
+          message: "Let's get you started",
+          trigger: '3',
+          hideInput: true
+        },
+        {
+          id: '3',
+          message: 'What kind of holiday would you like to go for?',
+          trigger: 'option_holiday_type',
+          hideInput: true
+        },
+        {
+          id: 'option_holiday_type',
+
+          options: [
+            {
+              value: '1',
+              label: 'First Image',
+              trigger: 'ask_name',
+              optionBubbleStyle: {
+                padding: '0px',
+                overflow: 'hidden',
+                borderRadius: '10px'
+              },
+              onOptionAction: data => {
+                // this.onRadioOptionClicked(data);
+                this.setState({ selectedOption: data });
+              },
+              optionComponent: (
+                <ImageOption
+                  imageSource="https://i.imgur.com/JYNzLzx.jpg"
+                  checked={false}
+                  label="Sandy Holiday"
+                />
+              )
+            },
+            {
+              value: '2',
+              label: 'Second Image',
+              trigger: 'ask_name',
+              optionBubbleStyle: { padding: '0px', overflow: 'hidden', borderRadius: '10px' },
+              onOptionAction: data => {
+                // this.onRadioOptionClicked(data);
+                this.setState({ selectedOption: data });
+              },
+              optionComponent: (
+                <ImageOption
+                  imageSource="https://i.imgur.com/iTekUgc.jpg"
+                  checked={false}
+                  label="Beach Holiday"
+                />
+              ),
+              user: true
+            }
+          ],
+
+          hideInput: true
+        },
+        {
+          id: 'ask_name',
+          message: 'can i know your name',
+          trigger: 'name'
+        },
+        {
+          id: 'name',
+          user: true,
+          trigger: 'disp'
+        },
+        {
+          id: 'disp',
+          message: 'Hi, {previousValue}',
+          trigger: 'gender',
+          hideInput: true
+        },
+        {
+          id: 'gender',
+          message: 'What is your gender',
+          trigger: 'option_gender',
+          hideInput: true
+        },
+        {
+          id: 'option_gender',
+          options: [
+            { value: 'male', label: 'Male', trigger: 'thanks' },
+            { value: 'female', label: 'Female', trigger: 'thanks' }
+          ],
+          hideInput: true
+        },
+        {
+          id: 'thanks',
+          message: 'Thank you for registering with us',
+
+          hideInput: true
+        }
+      ]
     };
   }
 
-  onRadioOptionClicked = data => {
-    const { step, option } = data;
-    const optionsToUpdate = [];
-    step.options.map(item => {
-      if (item.value === option.value) {
-        optionsToUpdate.push({
-          ...item,
-          optionComponent: {
-            ...item.optionComponent,
-            props: { ...item.optionComponent.props, checked: true }
-          }
-        });
-      } else {
-        optionsToUpdate.push({
-          ...item,
-          optionComponent: {
-            ...item.optionComponent,
-            props: { ...item.optionComponent.props, checked: false }
-          }
-        });
-      }
-      return null;
-    });
+  // onRadioOptionClicked = data => {
+  //   console.log('[data]', data)
 
-    this.chatBotRef.updateRenderedSteps({
-      ...step,
-      options: optionsToUpdate
-    });
-  };
+  // };
 
   chatBotRef;
 
   render() {
-    const { selectedOption } = this.state;
+    const { selectedOption, steps } = this.state;
     return (
       <ThemeProvider theme={otherFontTheme}>
         <React.StrictMode>
@@ -171,7 +146,7 @@ class ThemedExample extends React.Component {
             botDelay={100}
             customDelay={100}
             userDelay={100}
-            steps={this.steps}
+            steps={steps}
           />
           <button
             type="button"

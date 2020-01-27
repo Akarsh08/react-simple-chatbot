@@ -12,6 +12,38 @@ class OptionsStep extends Component {
     triggerNextStep({ value });
   };
 
+  onCustomOptionAction = (step, option) => {
+    const { updateRenderedSteps } = this.props;
+    const { onOptionAction } = option;
+    const optionsToUpdate = [];
+    step.options.map(item => {
+      if (item.value === option.value) {
+        optionsToUpdate.push({
+          ...item,
+          optionComponent: {
+            ...item.optionComponent,
+            props: { ...item.optionComponent.props, checked: true }
+          }
+        });
+      } else {
+        optionsToUpdate.push({
+          ...item,
+          optionComponent: {
+            ...item.optionComponent,
+            props: { ...item.optionComponent.props, checked: false }
+          }
+        });
+      }
+
+      return null;
+    });
+    updateRenderedSteps({
+      ...step,
+      options: optionsToUpdate
+    });
+    onOptionAction({ option, step });
+  };
+
   renderOption = option => {
     const { bubbleOptionStyle, step } = this.props;
     const { user } = step;
@@ -23,7 +55,7 @@ class OptionsStep extends Component {
           style={{ ...bubbleOptionStyle, ...optionBubbleStyle }}
           user={user}
           onClick={() =>
-            onOptionAction ? onOptionAction({ option, step }) : this.onOptionClick({ value })
+            onOptionAction ? this.onCustomOptionAction(step, option) : this.onOptionClick({ value })
           }
         >
           {optionComponent || label}
@@ -51,7 +83,8 @@ class OptionsStep extends Component {
 OptionsStep.propTypes = {
   bubbleOptionStyle: PropTypes.objectOf(PropTypes.any).isRequired,
   step: PropTypes.objectOf(PropTypes.any).isRequired,
-  triggerNextStep: PropTypes.func.isRequired
+  triggerNextStep: PropTypes.func.isRequired,
+  updateRenderedSteps: PropTypes.func.isRequired
 };
 
 export default OptionsStep;
