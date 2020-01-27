@@ -20,6 +20,7 @@ import Recognition from './recognition';
 import { ChatIcon, CloseIcon, SubmitIcon, MicIcon } from './icons';
 import { isMobile } from './utils';
 import { speakFn } from './speechSynthesis';
+import { findIndex } from 'lodash';
 
 class ChatBot extends Component {
   /* istanbul ignore next */
@@ -169,12 +170,6 @@ class ChatBot extends Component {
       this.content.removeEventListener('DOMNodeInserted', this.onNodeInserted);
       window.removeEventListener('resize', this.onResize);
     }
-  }
-
-  updateRenderedSteps() {
-    this.setState({ renderedSteps: this.state.renderedSteps }, () =>
-      console.log(this.state.renderedSteps)
-    );
   }
 
   onNodeInserted = event => {
@@ -529,6 +524,15 @@ class ChatBot extends Component {
       this.setState({ opened });
     }
   };
+
+  updateRenderedSteps(step) {
+    const { renderedSteps } = this.state;
+    const stepIndex = findIndex(renderedSteps, rStep => rStep.key === step.key);
+    if (stepIndex !== -1) {
+      renderedSteps.splice(stepIndex, 1, step);
+      this.setState({ renderedSteps });
+    }
+  }
 
   renderStep = (step, index) => {
     const { renderedSteps } = this.state;

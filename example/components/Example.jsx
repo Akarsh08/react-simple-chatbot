@@ -2,7 +2,7 @@ import React from 'react';
 import { ThemeProvider } from 'styled-components';
 import ChatBot from '../../lib/index';
 import ImageOption from './ImageOption';
-import { cloneDeep } from 'lodash';
+import { set } from 'lodash';
 
 const otherFontTheme = {
   background: '#f5f8fb',
@@ -17,13 +17,6 @@ const otherFontTheme = {
 };
 
 class ThemedExample extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      selectedOption: {}
-    };
-  }
-
   steps = [
     {
       id: '1',
@@ -55,12 +48,15 @@ class ThemedExample extends React.Component {
             overflow: 'hidden',
             borderRadius: '10px'
           },
-          onOptionAction: data => this.setState({ selectedOption: data }),
+          onOptionAction: data => {
+            this.onRadioOptionClicked(data);
+            this.setState({ selectedOption: data });
+          },
           optionComponent: (
             <ImageOption
               imageSource="https://i.imgur.com/JYNzLzx.jpg"
               checked={false}
-              label="Beach Holiday"
+              label="Sandy Holiday"
             />
           )
         },
@@ -70,18 +66,8 @@ class ThemedExample extends React.Component {
           trigger: 'ask_name',
           optionBubbleStyle: { padding: '0px', overflow: 'hidden', borderRadius: '10px' },
           onOptionAction: data => {
-            const { step, option } = data;
-            const optionsToUpdate = [];
-            console.log(step);
-            step.options.map((item, index) => {
-              // if (item.value === option.value) {
-              // } else {
-              //   item.optionComponent.props.checked = false;
-              // }
-            });
-
-            // this.chatBotRef.updateRenderedSteps();
-            // this.setState({ selectedOption: data });
+            this.onRadioOptionClicked(data);
+            this.setState({ selectedOption: data });
           },
           optionComponent: (
             <ImageOption
@@ -133,6 +119,43 @@ class ThemedExample extends React.Component {
       hideInput: true
     }
   ];
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      selectedOption: {}
+    };
+  }
+
+  onRadioOptionClicked = data => {
+    const { step, option } = data;
+    const optionsToUpdate = [];
+    step.options.map(item => {
+      if (item.value === option.value) {
+        optionsToUpdate.push({
+          ...item,
+          optionComponent: {
+            ...item.optionComponent,
+            props: { ...item.optionComponent.props, checked: true }
+          }
+        });
+      } else {
+        optionsToUpdate.push({
+          ...item,
+          optionComponent: {
+            ...item.optionComponent,
+            props: { ...item.optionComponent.props, checked: false }
+          }
+        });
+      }
+      return null;
+    });
+
+    this.chatBotRef.updateRenderedSteps({
+      ...step,
+      options: optionsToUpdate
+    });
+  };
 
   chatBotRef;
 

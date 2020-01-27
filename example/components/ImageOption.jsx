@@ -9,12 +9,12 @@ class ImageOption extends Component {
     };
   }
 
-  // static getDerivedStateFromProps(props, state) {
-  //   if (props.checked !== state.checked) {
-  //     return { checked: props.checked };
-  //   }
-  //   return null;
-  // }
+  static getDerivedStateFromProps(props, state) {
+    if (props.checked !== state.checked) {
+      return { checked: props.checked };
+    }
+    return null;
+  }
 
   handlePress = () => {
     const { checked } = this.state;
