@@ -17,6 +17,7 @@
     "no-restricted-syntax": 0,
     "no-param-reassign": 0,
     "react/no-will-update-set-state": 0,
+    "react/destructuring-assignment": false,
     "new-cap": 0
   }
 }

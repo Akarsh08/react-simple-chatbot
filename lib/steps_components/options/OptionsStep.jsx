@@ -12,7 +12,7 @@ class OptionsStep extends Component {
     triggerNextStep({ value });
   };
 
-  onCustomOptionAction = (step, option) => {
+  onSingleSelectOptionAction = (step, option) => {
     const { updateRenderedSteps } = this.props;
     const { onOptionAction } = option;
     const optionsToUpdate = [];
@@ -23,7 +23,8 @@ class OptionsStep extends Component {
           optionComponent: {
             ...item.optionComponent,
             props: { ...item.optionComponent.props, checked: true }
-          }
+          },
+          metadata: { checked: true }
         });
       } else {
         optionsToUpdate.push({
@@ -31,7 +32,8 @@ class OptionsStep extends Component {
           optionComponent: {
             ...item.optionComponent,
             props: { ...item.optionComponent.props, checked: false }
-          }
+          },
+          metadata: { checked: false }
         });
       }
 
@@ -42,6 +44,54 @@ class OptionsStep extends Component {
       options: optionsToUpdate
     });
     onOptionAction({ option, step });
+  };
+
+  onMultiSelectOptionAction = (step, option) => {
+    const { updateRenderedSteps } = this.props;
+    const { onOptionAction } = option;
+    const optionsToUpdate = step.options;
+    step.options.map((item, index) => {
+      if (item.value === option.value) {
+        optionsToUpdate.splice(index, 1, {
+          ...item,
+          optionComponent: {
+            ...item.optionComponent,
+            props: { ...item.optionComponent.props, checked: !item.metadata.checked }
+          },
+          metadata: { checked: !item.metadata.checked },
+          label: item.metadata.checked
+            ? `${option.label}`.replace(option.value, '').replace(/^(\s*,*)*|(\s*,*)*$/g, '')
+            : `${option.label}, ${option.value}`.replace(/^(\s*,*)*|(\s*,*)*$/g, '')
+        });
+      } else {
+        optionsToUpdate.splice(index, 1, {
+          ...item,
+          label: option.metadata.checked
+            ? `${option.label}`.replace(option.value, '').replace(/^(\s*,*)*|(\s*,*)*$/g, '')
+            : `${option.label}, ${option.value}`.replace(/^(\s*,*)*|(\s*,*)*$/g, '')
+        });
+      }
+      return null;
+    });
+    updateRenderedSteps({
+      ...step,
+      options: optionsToUpdate
+    });
+    onOptionAction({ option, step });
+  };
+
+  customOptionActionByType = (step, option) => {
+    const { onOptionAction } = option;
+    switch (step.metadata.optionType) {
+      case 'multiSelect':
+        this.onMultiSelectOptionAction(step, option);
+        break;
+      case 'singleSelect':
+        this.onSingleSelectOptionAction(step, option);
+        break;
+      default:
+        onOptionAction({ option, step });
+    }
   };
 
   renderOption = option => {
@@ -55,7 +105,9 @@ class OptionsStep extends Component {
           style={{ ...bubbleOptionStyle, ...optionBubbleStyle }}
           user={user}
           onClick={() =>
-            onOptionAction ? this.onCustomOptionAction(step, option) : this.onOptionClick({ value })
+            onOptionAction
+              ? this.customOptionActionByType(step, option)
+              : this.onOptionClick({ value })
           }
         >
           {optionComponent || label}

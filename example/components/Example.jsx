@@ -1,6 +1,5 @@
 import React from 'react';
 import { ThemeProvider } from 'styled-components';
-import { get } from 'lodash';
 import ChatBot from '../../lib/index';
 import ImageOption from './ImageOption';
 
@@ -12,8 +11,8 @@ const otherFontTheme = {
   headerFontSize: '16px',
   botBubbleColor: '#FFF',
   botFontColor: '#333',
-  userBubbleColor: '#fff',
-  userFontColor: '#4a4a4a'
+  userBubbleColor: 'rgb(226,240,216)',
+  userFontColor: 'rgb(93,152,56)'
 };
 
 class ThemedExample extends React.Component {
@@ -37,7 +36,7 @@ class ThemedExample extends React.Component {
         {
           id: '3',
           message: 'What kind of holiday would you like to go for?',
-          trigger: 'option_holiday_type',
+          trigger: 'people',
           hideInput: true
         },
         {
@@ -45,9 +44,13 @@ class ThemedExample extends React.Component {
 
           options: [
             {
-              value: '1',
-              label: 'First Image',
-              trigger: 'ask_name',
+              value: 'Sandy Holiday',
+              label: '',
+              trigger: data => {
+                return this.state.selectedOption.option.value === 'Sandy Holiday'
+                  ? 'gender'
+                  : 'ask_name ';
+              },
               optionBubbleStyle: {
                 padding: '0px',
                 overflow: 'hidden',
@@ -63,11 +66,12 @@ class ThemedExample extends React.Component {
                   checked={false}
                   label="Sandy Holiday"
                 />
-              )
+              ),
+              metadata: { checked: false }
             },
             {
-              value: '2',
-              label: 'Second Image',
+              value: 'Beach Holiday',
+              label: '',
               trigger: 'ask_name',
               optionBubbleStyle: { padding: '0px', overflow: 'hidden', borderRadius: '10px' },
               onOptionAction: data => {
@@ -81,10 +85,10 @@ class ThemedExample extends React.Component {
                   label="Beach Holiday"
                 />
               ),
-              user: true
+              metadata: { checked: false }
             }
           ],
-
+          metadata: { optionType: 'multiSelect' },
           hideInput: true
         },
         {
@@ -112,15 +116,142 @@ class ThemedExample extends React.Component {
         {
           id: 'option_gender',
           options: [
-            { value: 'male', label: 'Male', trigger: 'thanks' },
-            { value: 'female', label: 'Female', trigger: 'thanks' }
+            { value: 'male', label: 'Male', trigger: 'people' },
+            { value: 'female', label: 'Female', trigger: 'people' }
           ],
           hideInput: true
         },
         {
+          id: 'people',
+          message: 'whom are you travelling with ?',
+          trigger: 'ask_people'
+        },
+        {
+          id: 'ask_people',
+          options: [
+            {
+              value: 'Adult',
+              label: '',
+              trigger: 'disp_people',
+              optionBubbleStyle: {
+                padding: '0px',
+                margin: '0px 5px',
+                backgroundColor: 'transparent',
+                boxShadow: '0 0'
+              },
+              onOptionAction: data => {
+                // this.onRadioOptionClicked(data);
+                this.setState({ selectedOption: data });
+              },
+              optionComponent: (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <p style={{ margin: 5, color: '#555', fontWeight: '200' }}>Adult</p>
+                  <div
+                    style={{
+                      display: 'flex',
+                      width: '130px',
+                      height: 25,
+                      padding: 12,
+                      boxShadow: '0 2px 4px 0 rgba(0,0,0,0.15)',
+                      backgroundColor: '#FFF',
+                      alignItems: 'center',
+                      justifyContent: 'space_between',
+                      borderRadius: '0px 20px 20px 20px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', flex: 1, justifyContent: 'center' }}>{'<'}</div>
+                    <div
+                      style={{
+                        display: 'flex',
+                        flex: 1,
+                        justifyContent: 'center',
+                        fontSize: 18
+                      }}
+                    >
+                      1
+                    </div>
+                    <div style={{ display: 'flex', flex: 1, justifyContent: 'center' }}>{'>'}</div>
+                  </div>
+                </div>
+              ),
+              metadata: { checked: false }
+            },
+            {
+              value: 'Children',
+              label: '',
+              trigger: 'disp_people',
+              optionBubbleStyle: {
+                padding: '0px',
+                paddingTop: 0,
+                backgroundColor: 'transparent',
+                boxShadow: '0 0'
+              },
+              onOptionAction: data => {
+                // this.onRadioOptionClicked(data);
+                this.setState({ selectedOption: data });
+              },
+              optionComponent: (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <p
+                    style={{
+                      display: 'flex',
+                      margin: 5,
+                      color: '#555',
+                      fontWeight: '200',
+                      flexDirection: 'row',
+                      alignItems: 'flex-end'
+                    }}
+                  >
+                    Children{' '}
+                    <p style={{ margin: '2px 5px', fontSize: 10, color: '#999' }}>
+                      {' '}
+                      (under 18 years)
+                    </p>
+                  </p>
+                  <div
+                    style={{
+                      display: 'flex',
+                      width: '130px',
+                      height: 25,
+                      padding: 12,
+                      boxShadow: '0 2px 4px 0 rgba(0,0,0,0.15)',
+                      backgroundColor: '#FFF',
+                      alignItems: 'center',
+                      justifyContent: 'space_between',
+                      borderRadius: '0px 20px 20px 20px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', flex: 1, justifyContent: 'center' }}>{'<'}</div>
+                    <div
+                      style={{
+                        display: 'flex',
+                        flex: 1,
+                        justifyContent: 'center',
+                        fontSize: 18
+                      }}
+                    >
+                      1
+                    </div>
+                    <div style={{ display: 'flex', flex: 1, justifyContent: 'center' }}>{'>'}</div>
+                  </div>
+                </div>
+              ),
+              metadata: { checked: false }
+            }
+          ],
+          metadata: {
+            optionType: 'counter'
+          }
+        },
+        {
+          id: 'disp_people',
+          message: 'you are travelling with people',
+          trigger: 'thanks'
+        },
+        {
           id: 'thanks',
           message: 'Thank you for registering with us',
-
+          end: true,
           hideInput: true
         }
       ]
@@ -141,6 +272,7 @@ class ThemedExample extends React.Component {
         <React.StrictMode>
           <ChatBot
             // floating
+            hideUserAvatar
             hideHeader
             ref={ref => (this.chatBotRef = ref)}
             botDelay={100}
@@ -165,7 +297,7 @@ class ThemedExample extends React.Component {
               this.chatBotRef.triggerNextStep(selectedOption.option);
             }}
           >
-            >
+            {'>'}
           </button>
         </React.StrictMode>
       </ThemeProvider>
