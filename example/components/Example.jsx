@@ -2,7 +2,6 @@ import React from 'react';
 import { ThemeProvider } from 'styled-components';
 import ChatBot from '../../lib/index';
 import ImageOption from './ImageOption';
-
 const otherFontTheme = {
   background: '#f5f8fb',
   fontFamily: 'Helvetica Neue',
@@ -23,6 +22,7 @@ class ThemedExample extends React.Component {
       steps: [
         {
           id: '1',
+          delay: 1500,
           message: 'Hey, I am AITA you family trip assistant ',
           trigger: '2',
           hideInput: true
@@ -36,7 +36,7 @@ class ThemedExample extends React.Component {
         {
           id: '3',
           message: 'What kind of holiday would you like to go for?',
-          trigger: 'people',
+          trigger: 'name',
           hideInput: true
         },
         {
@@ -98,8 +98,14 @@ class ThemedExample extends React.Component {
         },
         {
           id: 'name',
-          user: true,
-          trigger: 'disp'
+          message: "That's great!",
+          hideInput: true,
+          // delay: 1500,
+          trigger: '1',
+          // user: true,
+          metadata: {
+            emulateUser: true
+          }
         },
         {
           id: 'disp',
@@ -275,9 +281,9 @@ class ThemedExample extends React.Component {
             hideUserAvatar
             hideHeader
             ref={ref => (this.chatBotRef = ref)}
-            botDelay={100}
-            customDelay={100}
-            userDelay={100}
+            botDelay={500}
+            customDelay={500}
+            userDelay={500}
             steps={steps}
           />
           <button

@@ -61,19 +61,22 @@ class TextStep extends Component {
       hideUserAvatar
     } = this.props;
     const { loading } = this.state;
-    const { avatar, user } = step;
+    const { avatar, user, metadata } = step;
+    const emulateUser = metadata && metadata.emulateUser;
 
-    const showAvatar = user ? !hideUserAvatar : !hideBotAvatar;
-
+    const showAvatar = user || emulateUser ? !hideUserAvatar : !hideBotAvatar;
     return (
-      <TextStepContainer className={`rsc-ts ${user ? 'rsc-ts-user' : 'rsc-ts-bot'}`} user={user}>
-        <ImageContainer className="rsc-ts-image-container" user={user}>
+      <TextStepContainer
+        className={`rsc-ts ${user || emulateUser ? 'rsc-ts-user' : 'rsc-ts-bot'}`}
+        user={user || emulateUser}
+      >
+        <ImageContainer className="rsc-ts-image-container" user={user || emulateUser}>
           {isFirst && showAvatar && (
             <Image
               className="rsc-ts-image"
               style={avatarStyle}
               showAvatar={showAvatar}
-              user={user}
+              user={user || emulateUser}
               src={avatar}
               alt="avatar"
             />
@@ -82,7 +85,7 @@ class TextStep extends Component {
         <Bubble
           className="rsc-ts-bubble"
           style={bubbleStyle}
-          user={user}
+          user={user || emulateUser}
           showAvatar={showAvatar}
           isFirst={isFirst}
           isLast={isLast}

@@ -314,19 +314,20 @@ class ChatBot extends Component {
   isFirstPosition = step => {
     const { renderedSteps } = this.state;
     const stepIndex = renderedSteps.map(s => s.key).indexOf(step.key);
-
+    const stepEmulateUser = step.metadata && step.metadata.emulateUser;
     if (stepIndex === 0) {
       return true;
     }
 
     const lastStep = renderedSteps[stepIndex - 1];
     const hasMessage = lastStep.message || lastStep.asMessage;
+    const lastStepEmulateUser = lastStep.metadata && lastStep.metadata.emulateUser;
 
     if (!hasMessage) {
       return true;
     }
 
-    const isFirst = step.user !== lastStep.user;
+    const isFirst = step.user !== lastStep.user || stepEmulateUser !== lastStepEmulateUser;
     return isFirst;
   };
 
