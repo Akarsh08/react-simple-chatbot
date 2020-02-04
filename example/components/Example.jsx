@@ -11,7 +11,7 @@ const otherFontTheme = {
   botBubbleColor: '#FFF',
   botFontColor: '#333',
   userBubbleColor: 'rgb(226,240,216)',
-  userFontColor: 'rgb(93,152,56)'
+  userFontColor: '#333'
 };
 
 class ThemedExample extends React.Component {
