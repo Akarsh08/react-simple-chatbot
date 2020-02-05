@@ -461,7 +461,7 @@ class ChatBot extends Component {
       const step = steps[i];
       let settings = {};
 
-      if (step.user) {
+      if (step.user || (step.metadata && step.metadata.emulateUser)) {
         settings = defaultUserSettings;
       } else if (step.message || step.asMessage) {
         settings = defaultBotSettings;

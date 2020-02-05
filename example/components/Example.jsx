@@ -277,8 +277,6 @@ class ThemedExample extends React.Component {
       <ThemeProvider theme={otherFontTheme}>
         <React.StrictMode>
           <ChatBot
-            // floating
-            hideUserAvatar
             hideHeader
             ref={ref => (this.chatBotRef = ref)}
             botDelay={500}
