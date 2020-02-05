@@ -4,6 +4,8 @@ const ImageContainer = styled.div`
   display: inline-block;
   order: ${props => (props.user ? '1' : '0')};
   padding: 6px;
+  width: 40px;
+  height: 40px;
 `;
 
 export default ImageContainer;
