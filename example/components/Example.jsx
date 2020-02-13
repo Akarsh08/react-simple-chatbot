@@ -1,7 +1,17 @@
 import React from 'react';
 import { ThemeProvider } from 'styled-components';
+import { noop } from 'lodash';
+
+import ModalOptionContainer from './ModalOptionContainer';
+import BubbleOptionContainer from './BubbleOptionContainer';
+import DropDownOptionListContainer from './DropDownListOptionContainer';
 import ChatBot from '../../lib/index';
 import ImageOption from './ImageOption';
+import BubbleOption from './BubbleOption';
+import DropDownOption from './DropDownOption';
+
+import './styles.css';
+
 const otherFontTheme = {
   background: '#f5f8fb',
   fontFamily: 'Helvetica Neue',
@@ -13,6 +23,8 @@ const otherFontTheme = {
   userBubbleColor: 'rgb(226,240,216)',
   userFontColor: '#333'
 };
+
+export const FOOTER_HEIGHT = 60;
 
 class ThemedExample extends React.Component {
   constructor(props) {
@@ -36,12 +48,10 @@ class ThemedExample extends React.Component {
         {
           id: '3',
           message: 'What kind of holiday would you like to go for?',
-          trigger: 'name',
-          hideInput: true
+          trigger: 'option_holiday_type'
         },
         {
           id: 'option_holiday_type',
-
           options: [
             {
               value: 'Sandy Holiday',
@@ -88,8 +98,23 @@ class ThemedExample extends React.Component {
               metadata: { checked: false }
             }
           ],
-          metadata: { optionType: 'multiSelect' },
-          hideInput: true
+          metadata: {
+            optionSelectSubmit: true,
+            optionType: 'multiSelect',
+
+            initiallyEnableInput: true, // Option In modal
+            optionContainer: {
+              // Option In modal
+              ContainerComponent: ModalOptionContainer,
+              props: {
+                handleSubmit: () => {
+                  if (this.chatBotRef) {
+                    this.chatBotRef.handleSubmitButton();
+                  }
+                }
+              }
+            }
+          }
         },
         {
           id: 'ask_name',
@@ -102,7 +127,7 @@ class ThemedExample extends React.Component {
           hideInput: true,
           // delay: 1500,
           trigger: '1',
-          // user: true,
+          user: true,
           metadata: {
             emulateUser: true
           }
@@ -122,10 +147,50 @@ class ThemedExample extends React.Component {
         {
           id: 'option_gender',
           options: [
-            { value: 'male', label: 'Male', trigger: 'people' },
-            { value: 'female', label: 'Female', trigger: 'people' }
+            {
+              value: 'male',
+              label: 'Male',
+              trigger: 'people',
+              onOptionAction: noop,
+              optionComponent: (
+                <BubbleOption
+                  imageSource="https://i.imgur.com/JYNzLzx.jpg"
+                  checked={false}
+                  label="Male"
+                />
+              )
+            },
+            {
+              value: 'female',
+              label: 'Female',
+              trigger: 'people',
+              onOptionAction: noop,
+              optionComponent: (
+                <BubbleOption
+                  imageSource="https://i.imgur.com/JYNzLzx.jpg"
+                  checked={false}
+                  label="Female"
+                />
+              )
+            }
           ],
-          hideInput: true
+          // hideInput: true,
+          metadata: {
+            optionSelectSubmit: true, // get get control on submit
+            optionType: 'singleSelect',
+            initiallyEnableInput: true, // Option In modal
+            optionContainer: {
+              // Option In modal
+              ContainerComponent: BubbleOptionContainer,
+              props: {
+                handleSubmit: () => {
+                  if (this.chatBotRef) {
+                    this.chatBotRef.handleSubmitButton();
+                  }
+                }
+              }
+            }
+          }
         },
         {
           id: 'people',
@@ -137,7 +202,7 @@ class ThemedExample extends React.Component {
           options: [
             {
               value: 'Adult',
-              label: '',
+              label: 'yyy',
               trigger: 'disp_people',
               optionBubbleStyle: {
                 padding: '0px',
@@ -149,38 +214,10 @@ class ThemedExample extends React.Component {
                 // this.onRadioOptionClicked(data);
                 this.setState({ selectedOption: data });
               },
-              optionComponent: (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                  <p style={{ margin: 5, color: '#555', fontWeight: '200' }}>Adult</p>
-                  <div
-                    style={{
-                      display: 'flex',
-                      width: '130px',
-                      height: 25,
-                      padding: 12,
-                      boxShadow: '0 2px 4px 0 rgba(0,0,0,0.15)',
-                      backgroundColor: '#FFF',
-                      alignItems: 'center',
-                      justifyContent: 'space_between',
-                      borderRadius: '0px 20px 20px 20px'
-                    }}
-                  >
-                    <div style={{ display: 'flex', flex: 1, justifyContent: 'center' }}>{'<'}</div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        flex: 1,
-                        justifyContent: 'center',
-                        fontSize: 18
-                      }}
-                    >
-                      1
-                    </div>
-                    <div style={{ display: 'flex', flex: 1, justifyContent: 'center' }}>{'>'}</div>
-                  </div>
-                </div>
-              ),
-              metadata: { checked: false }
+              optionComponent: <DropDownOption label="Adults" />,
+              metadata: {
+                checked: false
+              }
             },
             {
               value: 'Children',
@@ -196,57 +233,27 @@ class ThemedExample extends React.Component {
                 // this.onRadioOptionClicked(data);
                 this.setState({ selectedOption: data });
               },
-              optionComponent: (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                  <p
-                    style={{
-                      display: 'flex',
-                      margin: 5,
-                      color: '#555',
-                      fontWeight: '200',
-                      flexDirection: 'row',
-                      alignItems: 'flex-end'
-                    }}
-                  >
-                    Children{' '}
-                    <p style={{ margin: '2px 5px', fontSize: 10, color: '#999' }}>
-                      {' '}
-                      (under 18 years)
-                    </p>
-                  </p>
-                  <div
-                    style={{
-                      display: 'flex',
-                      width: '130px',
-                      height: 25,
-                      padding: 12,
-                      boxShadow: '0 2px 4px 0 rgba(0,0,0,0.15)',
-                      backgroundColor: '#FFF',
-                      alignItems: 'center',
-                      justifyContent: 'space_between',
-                      borderRadius: '0px 20px 20px 20px'
-                    }}
-                  >
-                    <div style={{ display: 'flex', flex: 1, justifyContent: 'center' }}>{'<'}</div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        flex: 1,
-                        justifyContent: 'center',
-                        fontSize: 18
-                      }}
-                    >
-                      1
-                    </div>
-                    <div style={{ display: 'flex', flex: 1, justifyContent: 'center' }}>{'>'}</div>
-                  </div>
-                </div>
-              ),
+              optionComponent: <DropDownOption label="Children" />,
               metadata: { checked: false }
             }
           ],
           metadata: {
-            optionType: 'counter'
+            optionType: 'counter',
+            hideInputOnFocus: true,
+
+            optionSelectSubmit: true,
+            initiallyEnableInput: true, // Option In modal
+            optionContainer: {
+              // Option In modal
+              ContainerComponent: DropDownOptionListContainer,
+              props: {
+                handleSubmit: () => {
+                  if (this.chatBotRef) {
+                    this.chatBotRef.handleSubmitButton();
+                  }
+                }
+              }
+            }
           }
         },
         {
@@ -271,8 +278,28 @@ class ThemedExample extends React.Component {
 
   chatBotRef;
 
+  renderCustomSubmitIcon = () => {
+    return (
+      <div
+        style={{
+          height: 50,
+          width: 50,
+          backgroundColor: '#228B22',
+          justifyContent: 'center',
+          alignItems: 'center',
+          display: 'flex',
+          borderRadius: 25,
+          color: '#fff',
+          fontSize: 18
+        }}
+      >
+        >
+      </div>
+    );
+  };
+
   render() {
-    const { selectedOption, steps } = this.state;
+    const { steps } = this.state;
     return (
       <ThemeProvider theme={otherFontTheme}>
         <React.StrictMode>
@@ -283,26 +310,20 @@ class ThemedExample extends React.Component {
             customDelay={500}
             userDelay={500}
             steps={steps}
+            width="350px"
+            contentStyle={{ backgroundColor: '#F5F5F5', height: '450px' }}
+            customSubmitIcon={this.renderCustomSubmitIcon()}
+            footerStyle={{ backgroundColor: 'transparent' }}
+            inputStyle={{ height: FOOTER_HEIGHT, width: '80%' }}
+            submitButtonStyle={{
+              padding: 0
+            }}
+            controlStyle={{
+              position: 'absolute',
+              right: 5,
+              top: 5
+            }}
           />
-          <button
-            type="button"
-            style={{
-              padding: '19px 25px',
-              borderRadius: '50%',
-              marginTop: 5,
-              background:
-                'linear-gradient(to bottom right, rgb(132,190,83), rgb(102,161,62),rgb(102,161,62))',
-              borderWidth: 0,
-              color: '#FFF',
-              fontSize: 22,
-              fontWeight: 'bold'
-            }}
-            onClick={() => {
-              this.chatBotRef.triggerNextStep(selectedOption.option);
-            }}
-          >
-            {'>'}
-          </button>
         </React.StrictMode>
       </ThemeProvider>
     );

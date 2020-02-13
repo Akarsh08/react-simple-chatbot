@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Random from 'random-id';
-import { findIndex } from 'lodash';
+import { findIndex, get, isNil } from 'lodash';
 import { CustomStep, OptionsStep, TextStep } from './steps_components';
 import schema from './schemas/schema';
 import * as storage from './storage';
@@ -41,6 +41,8 @@ class ChatBot extends Component {
     };
 
     this.state = {
+      inputFocused: false,
+      currentSelectedCustomOption: null,
       renderedSteps: [],
       previousSteps: [],
       currentStep: {},
@@ -60,6 +62,16 @@ class ChatBot extends Component {
 
   componentDidMount() {
     this.updateStepDataset();
+  }
+
+  componentDidUpdate() {
+    if (
+      this.state.inputFocused &&
+      get(this.state.currentStep.metadata, 'hideInputOnFocus', false)
+    ) {
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState({ inputFocused: false });
+    }
   }
 
   static getDerivedStateFromProps(props, state) {
@@ -338,25 +350,30 @@ class ChatBot extends Component {
   };
 
   handleSubmitButton = () => {
-    const { speaking, recognitionEnable } = this.state;
+    const { speaking, recognitionEnable, currentStep, currentSelectedCustomOption } = this.state;
+    const { optionSelectSubmit } = currentStep.metadata;
 
-    if ((this.isInputValueEmpty() || speaking) && recognitionEnable) {
-      this.recognition.speak();
-      if (!speaking) {
-        this.setState({ speaking: true });
+    if (optionSelectSubmit) {
+      this.triggerNextStep(currentSelectedCustomOption);
+    } else {
+      if ((this.isInputValueEmpty() || speaking) && recognitionEnable) {
+        this.recognition.speak();
+        if (!speaking) {
+          this.setState({ speaking: true });
+        }
+        return;
       }
-      return;
-    }
 
-    this.submitUserMessage();
+      this.submitUserMessage();
+    }
   };
 
   submitUserMessage = () => {
     const { defaultUserSettings, inputValue, previousSteps, renderedSteps } = this.state;
     let { currentStep } = this.state;
+    const { handleSubmitButton } = currentStep;
 
-    const isInvalid = currentStep.validator && this.checkInvalidInput();
-
+    const isInvalid = !handleSubmitButton && (currentStep.validator && this.checkInvalidInput());
     if (!isInvalid) {
       const step = {
         message: inputValue,
@@ -432,6 +449,23 @@ class ChatBot extends Component {
     } else {
       this.setState({ opened });
     }
+  };
+
+  enableSubmitButton = () => {
+    this.setState({ disabled: false });
+  };
+
+  setSelectedOption = optionValue => {
+    this.setState({ currentSelectedCustomOption: optionValue });
+  };
+
+  handleCustomOptionSelection = optionValue => {
+    this.enableSubmitButton();
+    this.setSelectedOption(optionValue);
+  };
+
+  onInputFocusOrBlur = value => {
+    this.setState({ inputFocused: value });
   };
 
   updateStepDataset(stepsDataset) {
@@ -540,7 +574,7 @@ class ChatBot extends Component {
   }
 
   renderStep = (step, index) => {
-    const { renderedSteps } = this.state;
+    const { renderedSteps, inputFocused } = this.state;
     const {
       avatarStyle,
       bubbleStyle,
@@ -578,6 +612,8 @@ class ChatBot extends Component {
           triggerNextStep={this.triggerNextStep}
           bubbleOptionStyle={bubbleOptionStyle}
           updateRenderedSteps={stepValue => this.updateRenderedSteps(stepValue)}
+          handleCustomOptionSelection={this.handleCustomOptionSelection}
+          inputFocused={inputFocused}
         />
       );
     }
@@ -633,7 +669,8 @@ class ChatBot extends Component {
       style,
       submitButtonStyle,
       width,
-      height
+      height,
+      customSubmitIcon
     } = this.props;
 
     const header = headerComponent || (
@@ -657,13 +694,18 @@ class ChatBot extends Component {
     }
 
     const icon =
-      (this.isInputValueEmpty() || speaking) && recognitionEnable ? <MicIcon /> : <SubmitIcon />;
+      customSubmitIcon ||
+      ((this.isInputValueEmpty() || speaking) && recognitionEnable ? <MicIcon /> : <SubmitIcon />);
 
     const inputPlaceholder = speaking
       ? recognitionPlaceholder
       : currentStep.placeholder || placeholder;
 
     const inputAttributesOverride = currentStep.inputAttributes || inputAttributes;
+
+    const inputdisable = !isNil(get(currentStep.metadata, 'initiallyEnableInput'))
+      ? !get(currentStep.metadata, 'initiallyEnableInput')
+      : disabled;
 
     return (
       <div className={`rsc ${className}`}>
@@ -698,23 +740,28 @@ class ChatBot extends Component {
             {renderedSteps.map(this.renderStep)}
           </Content>
           <Footer className="rsc-footer" style={footerStyle}>
-            {!currentStep.hideInput && (
-              <Input
-                type="textarea"
-                style={inputStyle}
-                ref={this.setInputRef}
-                className="rsc-input"
-                placeholder={inputInvalid ? '' : inputPlaceholder}
-                onKeyPress={this.handleKeyPress}
-                onChange={this.onValueChange}
-                value={inputValue}
-                floating={floating}
-                invalid={inputInvalid}
-                disabled={disabled}
-                hasButton={!hideSubmitButton}
-                {...inputAttributesOverride}
-              />
-            )}
+            {!currentStep.hideInput &&
+              (!(
+                this.state.inputFocused && get(currentStep.metadata, 'hideInputOnFocus', false)
+              ) && (
+                <Input
+                  type="textarea"
+                  style={inputStyle}
+                  ref={this.setInputRef}
+                  className="rsc-input"
+                  placeholder={inputInvalid ? '' : inputPlaceholder}
+                  onKeyPress={this.handleKeyPress}
+                  onChange={this.onValueChange}
+                  value={inputValue}
+                  floating={floating}
+                  invalid={inputInvalid}
+                  disabled={inputdisable}
+                  hasButton={!hideSubmitButton}
+                  onFocus={() => this.onInputFocusOrBlur(true)}
+                  onBlur={() => this.onInputFocusOrBlur(false)}
+                  {...inputAttributesOverride}
+                />
+              ))}
             <div style={controlStyle} className="rsc-controls">
               {!currentStep.hideInput && !currentStep.hideExtraControl && customControl}
               {!currentStep.hideInput && !hideSubmitButton && (
@@ -786,7 +833,9 @@ ChatBot.propTypes = {
   submitButtonStyle: PropTypes.objectOf(PropTypes.any),
   userAvatar: PropTypes.string,
   userDelay: PropTypes.number,
-  width: PropTypes.string
+  width: PropTypes.string,
+  customSubmitIcon: PropTypes.element,
+  optionSelectSubmit: PropTypes.boolean
 };
 
 ChatBot.defaultProps = {
@@ -836,7 +885,9 @@ ChatBot.defaultProps = {
   botAvatar:
     "data:image/svg+xml,%3csvg version='1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3e%3cpath d='M303 70a47 47 0 1 0-70 40v84h46v-84c14-8 24-23 24-40z' fill='%2393c7ef'/%3e%3cpath d='M256 23v171h23v-84a47 47 0 0 0-23-87z' fill='%235a8bb0'/%3e%3cpath fill='%2393c7ef' d='M0 240h248v124H0z'/%3e%3cpath fill='%235a8bb0' d='M264 240h248v124H264z'/%3e%3cpath fill='%2393c7ef' d='M186 365h140v124H186z'/%3e%3cpath fill='%235a8bb0' d='M256 365h70v124h-70z'/%3e%3cpath fill='%23cce9f9' d='M47 163h419v279H47z'/%3e%3cpath fill='%2393c7ef' d='M256 163h209v279H256z'/%3e%3cpath d='M194 272a31 31 0 0 1-62 0c0-18 14-32 31-32s31 14 31 32z' fill='%233c5d76'/%3e%3cpath d='M380 272a31 31 0 0 1-62 0c0-18 14-32 31-32s31 14 31 32z' fill='%231e2e3b'/%3e%3cpath d='M186 349a70 70 0 1 0 140 0H186z' fill='%233c5d76'/%3e%3cpath d='M256 349v70c39 0 70-31 70-70h-70z' fill='%231e2e3b'/%3e%3c/svg%3e",
   userAvatar:
-    "data:image/svg+xml,%3csvg viewBox='-208.5 21 100 100' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3e%3ccircle cx='-158.5' cy='71' fill='%23F5EEE5' r='50'/%3e%3cdefs%3e%3ccircle cx='-158.5' cy='71' id='a' r='50'/%3e%3c/defs%3e%3cclipPath id='b'%3e%3cuse overflow='visible' xlink:href='%23a'/%3e%3c/clipPath%3e%3cpath clip-path='url(%23b)' d='M-108.5 121v-14s-21.2-4.9-28-6.7c-2.5-.7-7-3.3-7-12V82h-30v6.3c0 8.7-4.5 11.3-7 12-6.8 1.9-28.1 7.3-28.1 6.7v14h100.1z' fill='%23E6C19C'/%3e%3cg clip-path='url(%23b)'%3e%3cdefs%3e%3cpath d='M-108.5 121v-14s-21.2-4.9-28-6.7c-2.5-.7-7-3.3-7-12V82h-30v6.3c0 8.7-4.5 11.3-7 12-6.8 1.9-28.1 7.3-28.1 6.7v14h100.1z' id='c'/%3e%3c/defs%3e%3cclipPath id='d'%3e%3cuse overflow='visible' xlink:href='%23c'/%3e%3c/clipPath%3e%3cpath clip-path='url(%23d)' d='M-158.5 100.1c12.7 0 23-18.6 23-34.4 0-16.2-10.3-24.7-23-24.7s-23 8.5-23 24.7c0 15.8 10.3 34.4 23 34.4z' fill='%23D4B08C'/%3e%3c/g%3e%3cpath d='M-158.5 96c12.7 0 23-16.3 23-31 0-15.1-10.3-23-23-23s-23 7.9-23 23c0 14.7 10.3 31 23 31z' fill='%23F2CEA5'/%3e%3c/svg%3e"
+    "data:image/svg+xml,%3csvg viewBox='-208.5 21 100 100' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3e%3ccircle cx='-158.5' cy='71' fill='%23F5EEE5' r='50'/%3e%3cdefs%3e%3ccircle cx='-158.5' cy='71' id='a' r='50'/%3e%3c/defs%3e%3cclipPath id='b'%3e%3cuse overflow='visible' xlink:href='%23a'/%3e%3c/clipPath%3e%3cpath clip-path='url(%23b)' d='M-108.5 121v-14s-21.2-4.9-28-6.7c-2.5-.7-7-3.3-7-12V82h-30v6.3c0 8.7-4.5 11.3-7 12-6.8 1.9-28.1 7.3-28.1 6.7v14h100.1z' fill='%23E6C19C'/%3e%3cg clip-path='url(%23b)'%3e%3cdefs%3e%3cpath d='M-108.5 121v-14s-21.2-4.9-28-6.7c-2.5-.7-7-3.3-7-12V82h-30v6.3c0 8.7-4.5 11.3-7 12-6.8 1.9-28.1 7.3-28.1 6.7v14h100.1z' id='c'/%3e%3c/defs%3e%3cclipPath id='d'%3e%3cuse overflow='visible' xlink:href='%23c'/%3e%3c/clipPath%3e%3cpath clip-path='url(%23d)' d='M-158.5 100.1c12.7 0 23-18.6 23-34.4 0-16.2-10.3-24.7-23-24.7s-23 8.5-23 24.7c0 15.8 10.3 34.4 23 34.4z' fill='%23D4B08C'/%3e%3c/g%3e%3cpath d='M-158.5 96c12.7 0 23-16.3 23-31 0-15.1-10.3-23-23-23s-23 7.9-23 23c0 14.7 10.3 31 23 31z' fill='%23F2CEA5'/%3e%3c/svg%3e",
+  customSubmitIcon: undefined,
+  optionSelectSubmit: false
 };
 
 export default ChatBot;

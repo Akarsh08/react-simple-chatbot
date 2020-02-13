@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+
 import Option from './Option';
 import OptionElement from './OptionElement';
 import Options from './Options';
@@ -82,6 +83,8 @@ class OptionsStep extends Component {
 
   customOptionActionByType = (step, option) => {
     const { onOptionAction } = option;
+    this.props.handleCustomOptionSelection(option);
+    console.log('[option]', option);
     switch (step.metadata.optionType) {
       case 'multiSelect':
         this.onMultiSelectOptionAction(step, option);
@@ -117,8 +120,20 @@ class OptionsStep extends Component {
   };
 
   render() {
-    const { step } = this.props;
+    const { step, inputFocused } = this.props;
     const { options } = step;
+    const { optionContainer } = step.metadata;
+
+    if (optionContainer) {
+      const { ContainerComponent, props } = optionContainer;
+      return (
+        <ContainerComponent {...props} inputFocused={inputFocused}>
+          {Object.keys(options)
+            .map(key => options[key])
+            .map(this.renderOption)}
+        </ContainerComponent>
+      );
+    }
 
     return (
       <OptionsStepContainer className="rsc-os">
@@ -136,7 +151,9 @@ OptionsStep.propTypes = {
   bubbleOptionStyle: PropTypes.objectOf(PropTypes.any).isRequired,
   step: PropTypes.objectOf(PropTypes.any).isRequired,
   triggerNextStep: PropTypes.func.isRequired,
-  updateRenderedSteps: PropTypes.func.isRequired
+  updateRenderedSteps: PropTypes.func.isRequired,
+  handleCustomOptionSelection: PropTypes.func.isRequired,
+  inputFocused: PropTypes.bool.isRequired
 };
 
 export default OptionsStep;

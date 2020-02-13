@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Proptypes from 'prop-types';
 
-class ImageOption extends Component {
+class BubbleOption extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -18,24 +18,27 @@ class ImageOption extends Component {
 
   // handlePress = () => {
   //   const { checked } = this.state;
-  //   console.log('logging here: ');
 
   //   this.setState({ checked: !checked });
   // };
 
   render() {
     const { checked } = this.state;
-    const { imageSource, label } = this.props;
+    const { label } = this.props;
+    console.log('[checked]', checked);
     return (
       <div
         // onClick={() => this.handlePress()}
-        style={{ display: 'flex', flex: 1, flexDirection: 'column' }}
+        style={{
+          display: 'flex',
+          flex: 1,
+          flexDirection: 'column'
+        }}
       >
-        <img alt="" style={{ width: 250, height: 130 }} src={imageSource} />
         <div
           style={{
             display: 'flex',
-            padding: 5,
+            paddingHorizontal: 5,
             flex: 1,
             flexDirection: 'row',
             justifyContent: 'flex-start',
@@ -50,9 +53,8 @@ class ImageOption extends Component {
   }
 }
 
-ImageOption.propTypes = {
-  imageSource: Proptypes.string.isRequired,
+BubbleOption.propTypes = {
   label: Proptypes.string.isRequired
 };
 
-export default ImageOption;
+export default BubbleOption;
